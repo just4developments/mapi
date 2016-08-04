@@ -1,0 +1,3 @@
+1. Install mobile app
+2. Start mapi on server
+3. Test sync to and sync from 
