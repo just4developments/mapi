@@ -13,6 +13,6 @@ app.use('/notesecurity', require('./apps/node-security/index')());
 app.use('/api/savemoney', require('./apps/note-expensive/index')());
 app.use('/saleonline', require('./apps/sale-online/index')());
 
-app.listen(3000, function () {
+app.listen(8001, function () {
   console.log('Example app listening on port 3000!');
 });
