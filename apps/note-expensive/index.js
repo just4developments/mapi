@@ -4,6 +4,7 @@ var app = express();
 var mongo = require('./../db');
 var ObjectId = require('mongodb').ObjectID;
 var secure = require('../secure.js');
+var uuid = require('uuid');
 
 const DB = 'savemoney';
 
@@ -32,7 +33,7 @@ module.exports = function(){
 		let updatedAt = +req.query.updatedAt;
 		let where = {email: email, updatedAt: { $gt: updatedAt}};
 		if(removed >= 0) where.removed = removed;
-		if(startTime > 0 && table === 'Spending') where.createdAt = { $gt: startTime};
+		if(startTime > 0 && table === 'Spending') where.created_date = { $gt: startTime};
 		mongo.open(DB, function(db){					
 			mongo.find(db, table, where, function(db, rs){
 				mongo.close(db);
@@ -56,6 +57,7 @@ module.exports = function(){
 				listUpdate.push(r);
 			}else {
 				delete r.uid;
+				r.objectId = uuid.v4();
 				r.createdAt = new Date().getTime();
 				r.updatedAt = r.createdAt;
 				listAdd.push(r);
@@ -63,7 +65,7 @@ module.exports = function(){
 		}
 		var adds = (db, fcDone) => {
 			mongo.insert(db, table, listAdd, function(db, rs){
-				listAdd = rs.ops.map();
+				listAdd = rs.ops;
 				fcDone();
 			});
 		};
