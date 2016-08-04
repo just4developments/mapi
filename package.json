@@ -1,0 +1,20 @@
+{
+  "name": "mapi",
+  "version": "1.0.0",
+  "description": "api for mobile application",
+  "main": "index.js",
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "express": "^4.13.4",
+    "mongodb": "^2.1.14",
+    "node-rsa": "^0.3.2",
+    "nodemailer": "^0.7.1",
+    "unirest": "^0.4.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "npm start"
+  },
+  "author": "just4developments@gmail.com",
+  "license": "ISC"
+}
