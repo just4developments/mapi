@@ -5,6 +5,8 @@ var mongo = require('./../db');
 var ObjectId = require('mongodb').ObjectID;
 var secure = require('../secure.js');
 
+const DB = 'savemoney';
+
 module.exports = function(){
 	secure.crossdomain(app);
 
@@ -12,7 +14,7 @@ module.exports = function(){
 		let email=req.query.email;
 		let table = req.query.table;
 		let updatedAt = +req.query.updatedAt;
-		mongo.open('parsecom', function(db){					
+		mongo.open(DB, function(db){					
 			mongo.count(db, table, {email: email, updatedAt: { $gt: updatedAt}}, function(db, rs){
 				mongo.close(db);
 				res.type('text/plain').send(rs ? rs.toString(): null);
@@ -31,7 +33,7 @@ module.exports = function(){
 		let where = {email: email, updatedAt: { $gt: updatedAt}};
 		if(removed >= 0) where.removed = removed;
 		if(startTime > 0 && table === 'Spending') where.createdAt = { $gt: startTime};
-		mongo.open('parsecom', function(db){					
+		mongo.open(DB, function(db){					
 			mongo.find(db, table, where, function(db, rs){
 				mongo.close(db);
 				res.send(rs.map((e)=>{e.id = e._id; delete e._id; delete e.creditor_name; delete e.repayment_date; delete e.className; return e;}));
@@ -75,7 +77,7 @@ module.exports = function(){
 			};
 			update(0, fcDone);
 		}
-		mongo.open('parsecom', function(db){
+		mongo.open(DB, function(db){
 			if(listAdd.length > 0){
 				if(listUpdate.length > 0){
 					adds(db, () => {
@@ -107,7 +109,7 @@ module.exports = function(){
 
 	// app.route('/spending(/:id)?')
 	// .get(function(req, res){
-	// 	mongo.open('parsecom', function(db){					
+	// 	mongo.open(DB, function(db){					
 	// 		mongo.find(db, 'spending', {}, function(db, rs){
 	// 			mongo.close(db);
 	// 			res.send(rs);				
@@ -118,7 +120,7 @@ module.exports = function(){
 
 	// app.route('/typespending(/:id)?')
 	// .get(function(req, res){
-	// 	mongo.open('parsecom', function(db){					
+	// 	mongo.open(DB, function(db){					
 	// 		mongo.find(db, 'typespending', {}, function(db, rs){
 	// 			mongo.close(db);
 	// 			res.send(rs);				
@@ -129,7 +131,7 @@ module.exports = function(){
 
 	// app.route('/wallet(/:id)?')
 	// .get(function(req, res){
-	// 	mongo.open('parsecom', function(db){					
+	// 	mongo.open(DB, function(db){					
 	// 		mongo.find(db, 'wallet', {}, function(db, rs){
 	// 			mongo.close(db);
 	// 			res.send(rs);				
@@ -137,7 +139,7 @@ module.exports = function(){
 	// 	});
 	// })
 	// .put(function(req, res){
-	// 	mongo.open('parsecom', function(db){									
+	// 	mongo.open(DB, function(db){									
 	// 		mongo.update(db, 'wallet',
 	// 		{
 	// 			name: req.body.name,					
@@ -158,7 +160,7 @@ module.exports = function(){
 	// 	});
 	// })
 	// .post(function(req, res){
-	// 	mongo.open('parsecom', function(db){									
+	// 	mongo.open(DB, function(db){									
 	// 		mongo.insert(db, 'wallet',
 	// 		{
 	// 			email: req.body.email,

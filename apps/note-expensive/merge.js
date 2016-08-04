@@ -38,7 +38,7 @@ var mergeDoc = (db, name, skip, limit, fcDone, handler, okHandler) => {
 	});
 }
 
-MongoClient.connect("mongodb://localhost:27017/savemoney_test", function(err, db) {
+MongoClient.connect("mongodb://localhost:27017/savemoney", function(err, db) {
 	console.log('connect to db');
 	var walletMap = {};
 	var typeSpendingMap = {};
