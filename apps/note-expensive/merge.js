@@ -17,7 +17,7 @@ var copyDataFromFile = (db, name, fcDone) => {
 	var lineReader = require('readline').createInterface({
 		  input: require('fs').createReadStream(path + name + ".txt", {
 	    flags: 'r',
-	    encoding: 'utf-8'
+	    encoding: 'utf16le'
 	  })
 	});
 
