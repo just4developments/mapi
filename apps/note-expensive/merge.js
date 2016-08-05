@@ -27,11 +27,11 @@ var copyDataFromFile = (db, name, fcDone) => {
 
 	lineReader.on('line', function (line) {				
 		if(row++ === 0){			
-	  	line = line.split('\u0000').join('').substr(2, line.length -4);
+	  	line = line.split('\u0000').join('');
 	  	keys = line.split(';');
 	  	types = eval(name);	  	
 	  }else{
-	  	line = line.split('\u0000').join('').substr(2, line.length -4);
+	  	line = line.split('\u0000').join('');
 	  	if(line.length === 0) return;
 	  	var vl = line.split(';');
 	  	var item = {};
