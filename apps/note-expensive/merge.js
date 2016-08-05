@@ -31,7 +31,7 @@ var copyDataFromFile = (db, name, fcDone) => {
 	  	keys = line.split(';');
 	  	types = eval(name);	  	
 	  }else{
-	  	line = line.split('\u0000').join('').substr(1, line.length -1);
+	  	line = line.split('\u0000').join('');
 	  	if(line.length === 0) return;
 	  	var vl = line.split(';');
 	  	var item = {};
