@@ -43,11 +43,11 @@ var copyDataFromFile = (db, name, fcDone) => {
 	});
 
 	lineReader.on('close', () => {
-  // 	db.collection(name).insertMany(data, (err, vl) => {
-  // 		if(err) return console.error(err);
-  // 		console.log(`Inserted ${vl.insertedIds.length} from ${name}`);
-		// 	fcDone();
-		// });
+  	db.collection(name).insertMany(data, (err, vl) => {
+  		if(err) return console.error(err);
+  		console.log(`Inserted ${vl.insertedIds.length} from ${name}`);
+			fcDone();
+		});
 	})
 }
 MongoClient.connect("mongodb://localhost:27017/savemoney", function(err, db) {
