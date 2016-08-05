@@ -4,9 +4,9 @@ var ObjectID = require('mongodb').ObjectID;
 var path = __dirname + '/';
 var fs = require('fs');
 
-var wallet = 's;n;s;s;n;n;s;n;s;s;s;n;n;n;s'.split(';'); // ID;avail;email;icon;is_sync;money;name;removed;server_id;symb;sicon;oder;createdAt;updatedAt;objectId
-var spending = 's;n;n;n;s;s;s;n;n;s;s;s;n;n;n;n;n;n;s'.split(';'); // ID;created_day;created_month;created_year;server_id;des;email;type;money;type_spending_id;udes;wallet_id;is_report;is_sync;removed;created_date;createdAt;updatedAt;objectId
-var typespending = 's;s;s;n;s;n;s;n;s;n;s;n;n;s'.split(';'); // ID;email;icon;is_sync;name;oder;parent_id;removed;server_id;type;sicon;createdAt;updatedAt;objectId
+var Wallet = 's;n;s;s;n;n;s;n;s;s;s;n;n;n;s'.split(';'); // ID;avail;email;icon;is_sync;money;name;removed;server_id;symb;sicon;oder;createdAt;updatedAt;objectId
+var Spending = 's;n;n;n;s;s;s;n;n;s;s;s;n;n;n;n;n;n;s'.split(';'); // ID;created_day;created_month;created_year;server_id;des;email;type;money;type_spending_id;udes;wallet_id;is_report;is_sync;removed;created_date;createdAt;updatedAt;objectId
+var TypeSpending = 's;s;s;n;s;n;s;n;s;n;s;n;n;s'.split(';'); // ID;email;icon;is_sync;name;oder;parent_id;removed;server_id;type;sicon;createdAt;updatedAt;objectId
 
 var copyDataFromFile = (db, name, fcDone) => {
 	var row = 0;
