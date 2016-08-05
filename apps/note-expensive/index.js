@@ -115,7 +115,7 @@ module.exports = function(){
 	.get(function(req, res){
 		var oauth = req.headers.oauth;
 		mongo.open(DB, function(db){					
-			mongo.find(db, 'spending', {email: oauth}, function(db, rs){
+			mongo.find(db, 'Spending', {email: oauth}, function(db, rs){
 				mongo.close(db);
 				res.send(rs);				
 			}, {updatedAt: -1}, (+req.query.page-1)*+req.query.rows, +req.query.rows);
@@ -127,7 +127,7 @@ module.exports = function(){
 	.get(function(req, res){
 		var oauth = req.headers.oauth;
 		mongo.open(DB, function(db){					
-			mongo.find(db, 'typespending', {email: oauth}, function(db, rs){
+			mongo.find(db, 'TypeSpending', {email: oauth}, function(db, rs){
 				mongo.close(db);
 				res.send(rs);				
 			}, {oder: 1});
@@ -137,8 +137,9 @@ module.exports = function(){
 
 	app.route('/wallet(/:id)?')
 	.get(function(req, res){
+		var oauth = req.headers.oauth;
 		mongo.open(DB, function(db){					
-			mongo.find(db, 'wallet', {}, function(db, rs){
+			mongo.find(db, 'Wallet', {email: oauth}, function(db, rs){
 				mongo.close(db);
 				res.send(rs);				
 			});
@@ -146,7 +147,7 @@ module.exports = function(){
 	})
 	.put(function(req, res){
 		mongo.open(DB, function(db){									
-			mongo.update(db, 'wallet',
+			mongo.update(db, 'Wallet',
 			{
 				name: req.body.name,					
 				oder: parseInt(req.body.oder),
@@ -167,7 +168,7 @@ module.exports = function(){
 	})
 	.post(function(req, res){
 		mongo.open(DB, function(db){									
-			mongo.insert(db, 'wallet',
+			mongo.insert(db, 'Wallet',
 			{
 				email: req.body.email,
 				createat: new Date().getTime(),
