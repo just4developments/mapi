@@ -27,11 +27,11 @@ var copyDataFromFile = (db, name, fcDone) => {
 
 	lineReader.on('line', function (line) {				
 		if(row++ === 0){			
-	  	line = line.split('\u0000').join('');
+	  	line = line.split('\u0000').join('').substr(1, line.length -1);
 	  	keys = line.split(';');
 	  	types = eval(name);	  	
 	  }else{
-	  	line = line.split('\u0000').join('');
+	  	line = line.split('\u0000').join('').substr(1, line.length -1);
 	  	if(line.length === 0) return;
 	  	var vl = line.split(';');
 	  	var item = {};
@@ -43,11 +43,11 @@ var copyDataFromFile = (db, name, fcDone) => {
 	});
 
 	lineReader.on('close', () => {
-  	db.collection(name).insertMany(data, (err, vl) => {
-  		if(err) return console.error(err);
-  		console.log(`Inserted ${vl.insertedIds.length} from ${name}`);
-			fcDone();
-		});
+  // 	db.collection(name).insertMany(data, (err, vl) => {
+  // 		if(err) return console.error(err);
+  // 		console.log(`Inserted ${vl.insertedIds.length} from ${name}`);
+		// 	fcDone();
+		// });
 	})
 }
 MongoClient.connect("mongodb://localhost:27017/savemoney", function(err, db) {
