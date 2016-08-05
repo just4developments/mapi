@@ -51,9 +51,9 @@ var copyDataFromFile = (db, name, fcDone) => {
 	})
 }
 MongoClient.connect("mongodb://localhost:27017/savemoney", function(err, db) {
-	copyDataFromFile(db, 'wallet', () => {
-		copyDataFromFile(db, 'typespending', () => {
-			copyDataFromFile(db, 'spending', () => {
+	copyDataFromFile(db, 'Wallet', () => {
+		copyDataFromFile(db, 'TypeSpending', () => {
+			copyDataFromFile(db, 'Spending', () => {
 				db.close();
 				console.log('done');
 			});	

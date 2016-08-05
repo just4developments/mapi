@@ -109,79 +109,83 @@ module.exports = function(){
 		res.send('Completed');
 	});
 
-	// app.route('/spending(/:id)?')
-	// .get(function(req, res){
-	// 	mongo.open(DB, function(db){					
-	// 		mongo.find(db, 'spending', {}, function(db, rs){
-	// 			mongo.close(db);
-	// 			res.send(rs);				
-	// 		}, {created_date: -1});
-	// 	});
-	// })
-	// ;
+	////////////////////////////////////////////////////////////////////////////////////////
 
-	// app.route('/typespending(/:id)?')
-	// .get(function(req, res){
-	// 	mongo.open(DB, function(db){					
-	// 		mongo.find(db, 'typespending', {}, function(db, rs){
-	// 			mongo.close(db);
-	// 			res.send(rs);				
-	// 		}, {oder: 1});
-	// 	});
-	// })
-	// ;
+	app.route('/spending(/:id)?')
+	.get(function(req, res){
+		var oauth = req.headers.oauth;
+		mongo.open(DB, function(db){					
+			mongo.find(db, 'spending', {email: oauth}, function(db, rs){
+				mongo.close(db);
+				res.send(rs);				
+			}, {updatedAt: -1}, (+req.query.page-1)*+req.query.rows, +req.query.rows);
+		});
+	})
+	;
 
-	// app.route('/wallet(/:id)?')
-	// .get(function(req, res){
-	// 	mongo.open(DB, function(db){					
-	// 		mongo.find(db, 'wallet', {}, function(db, rs){
-	// 			mongo.close(db);
-	// 			res.send(rs);				
-	// 		});
-	// 	});
-	// })
-	// .put(function(req, res){
-	// 	mongo.open(DB, function(db){									
-	// 		mongo.update(db, 'wallet',
-	// 		{
-	// 			name: req.body.name,					
-	// 			oder: parseInt(req.body.oder),
-	// 			money: parseFloat(req.body.money),
-	// 			isInclude: parseInt(req.body.isInclude) > 0 ? true : false,					
-	// 			updateat: new Date().getTime()
-	// 		}, {
-	// 			'_id': new ObjectId(req.body._id)
-	// 		}, function(db, rs){
-	// 			mongo.close(db);
-	// 			if(rs.result.n == 1){
-	// 				res.send(rs);
-	// 			}else{
-	// 				res.sendStatus(403).send('Could not update wallet');
-	// 			}
-	// 		});
-	// 	});
-	// })
-	// .post(function(req, res){
-	// 	mongo.open(DB, function(db){									
-	// 		mongo.insert(db, 'wallet',
-	// 		{
-	// 			email: req.body.email,
-	// 			createat: new Date().getTime(),
-	// 			name: req.body.name,					
-	// 			oder: parseInt(req.body.oder),
-	// 			money: parseFloat(req.body.money),
-	// 			isInclude: parseInt(req.body.isInclude) > 0 ? true : false,					
-	// 			updateat: new Date().getTime()
-	// 		}, function(db, rs){
-	// 			mongo.close(db);
-	// 			if(rs.result.n == 1){
-	// 				res.send(rs.ops);
-	// 			}else{
-	// 				res.sendStatus(403).send('Could not create wallet');
-	// 			}
-	// 		});
-	// 	});
-	// });
+	app.route('/typespending(/:id)?')
+	.get(function(req, res){
+		var oauth = req.headers.oauth;
+		mongo.open(DB, function(db){					
+			mongo.find(db, 'typespending', {email: oauth}, function(db, rs){
+				mongo.close(db);
+				res.send(rs);				
+			}, {oder: 1});
+		});
+	})
+	;
+
+	app.route('/wallet(/:id)?')
+	.get(function(req, res){
+		mongo.open(DB, function(db){					
+			mongo.find(db, 'wallet', {}, function(db, rs){
+				mongo.close(db);
+				res.send(rs);				
+			});
+		});
+	})
+	.put(function(req, res){
+		mongo.open(DB, function(db){									
+			mongo.update(db, 'wallet',
+			{
+				name: req.body.name,					
+				oder: parseInt(req.body.oder),
+				money: parseFloat(req.body.money),
+				isInclude: parseInt(req.body.isInclude) > 0 ? true : false,					
+				updateat: new Date().getTime()
+			}, {
+				'_id': new ObjectId(req.body._id)
+			}, function(db, rs){
+				mongo.close(db);
+				if(rs.result.n == 1){
+					res.send(rs);
+				}else{
+					res.sendStatus(403).send('Could not update wallet');
+				}
+			});
+		});
+	})
+	.post(function(req, res){
+		mongo.open(DB, function(db){									
+			mongo.insert(db, 'wallet',
+			{
+				email: req.body.email,
+				createat: new Date().getTime(),
+				name: req.body.name,					
+				oder: parseInt(req.body.oder),
+				money: parseFloat(req.body.money),
+				isInclude: parseInt(req.body.isInclude) > 0 ? true : false,					
+				updateat: new Date().getTime()
+			}, function(db, rs){
+				mongo.close(db);
+				if(rs.result.n == 1){
+					res.send(rs.ops);
+				}else{
+					res.sendStatus(403).send('Could not create wallet');
+				}
+			});
+		});
+	});
 
 	return app;
 }
