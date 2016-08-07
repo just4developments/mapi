@@ -130,7 +130,7 @@ module.exports = function(){
 			mongo.find(db, 'TypeSpending', {email: oauth}, function(db, rs){
 				mongo.close(db);
 				res.send(rs);				
-			}, {oder: 1});
+			}, {parent_id: 1,oder: 1});
 		});
 	})
 	;
