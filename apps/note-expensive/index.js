@@ -115,7 +115,7 @@ module.exports = function(){
 	.get(function(req, res){
 		var oauth = req.headers.oauth;
 		mongo.open(DB, function(db){					
-			mongo.find(db, 'Spending', {email: oauth}, function(db, rs){
+			mongo.find(db, 'Spending', {email: oauth, removed: 0}, function(db, rs){
 				mongo.close(db);
 				res.send(rs);				
 			}, {updatedAt: -1}, (+req.query.page-1)*+req.query.rows, +req.query.rows);
@@ -127,7 +127,7 @@ module.exports = function(){
 	.get(function(req, res){
 		var oauth = req.headers.oauth;
 		mongo.open(DB, function(db){					
-			mongo.find(db, 'TypeSpending', {email: oauth}, function(db, rs){
+			mongo.find(db, 'TypeSpending', {email: oauth, removed: 0}, function(db, rs){
 				mongo.close(db);
 				res.send(rs);				
 			}, {parent_id: 1,oder: 1});
@@ -139,7 +139,7 @@ module.exports = function(){
 	.get(function(req, res){
 		var oauth = req.headers.oauth;
 		mongo.open(DB, function(db){					
-			mongo.find(db, 'Wallet', {email: oauth}, function(db, rs){
+			mongo.find(db, 'Wallet', {email: oauth, removed: 0}, function(db, rs){
 				mongo.close(db);
 				res.send(rs);				
 			});
