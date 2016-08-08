@@ -142,7 +142,7 @@ module.exports = function(){
 			mongo.find(db, 'Wallet', {email: oauth, removed: 0}, function(db, rs){
 				mongo.close(db);
 				res.send(rs);				
-			});
+			}, {parent_id: 1,oder: 1});
 		});
 	})
 	.put(function(req, res){
