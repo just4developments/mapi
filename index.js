@@ -14,5 +14,5 @@ app.use('/api/savemoney', require('./apps/note-expensive/index')());
 app.use('/saleonline', require('./apps/sale-online/index')());
 
 app.listen(8001, function () {
-  console.log('Example app listening on port 3000!');
+  console.log('Example app listening on port 8001!');
 });

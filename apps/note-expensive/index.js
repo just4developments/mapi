@@ -111,14 +111,48 @@ module.exports = function(){
 
 	////////////////////////////////////////////////////////////////////////////////////////
 
+	app.post('/login', (req, res) =>{
+		let email = req.body.email;
+		mongo.open(DB, function(db){
+			mongo.find(db, 'User', {email: email}, (db, rs) => {
+				if(rs.length > 0){
+					rs[0].updateat = new Date().getTime();
+					mongo.update(db, 'User',
+					{
+						updateat: rs[0].updateat
+					}, {email: email}, function(db, rs0){
+						mongo.close(db);
+						res.send(rs[0]);
+					});
+				}else{
+					mongo.insert(db, 'User',
+					{
+						email: email,
+						createat: new Date().getTime(),
+						updateat: new Date().getTime()
+					}, function(db, rs){
+						mongo.close(db);
+						if(rs.result.n == 1){							
+							res.send(rs.ops[0]);
+						}else{
+							res.sendStatus(403).send('Could not create user');
+						}
+					});
+				}
+			});			
+		});
+	});
+
 	app.route('/spending(/:id)?')
 	.get(function(req, res){
 		var oauth = req.headers.oauth;
+		var page = +(req.query.page || 1);
+		var rows = +(req.query.rows || 50);
 		mongo.open(DB, function(db){					
-			mongo.find(db, 'Spending', {email: oauth, removed: 0}, function(db, rs){
+			mongo.find(db, 'Spending', {email: oauth, removed: 0, updateat: { $gt: +req.query.time}}, function(db, rs){
 				mongo.close(db);
 				res.send(rs);				
-			}, {updatedAt: -1}, (+req.query.page-1)*+req.query.rows, +req.query.rows);
+			}, {updatedAt: -1}, (page-1) * rows, rows);
 		});
 	})
 	;
@@ -126,11 +160,13 @@ module.exports = function(){
 	app.route('/typespending(/:id)?')
 	.get(function(req, res){
 		var oauth = req.headers.oauth;
+		var page = +(req.query.page || 1);
+		var rows = +(req.query.rows || 50);
 		mongo.open(DB, function(db){					
-			mongo.find(db, 'TypeSpending', {email: oauth, removed: 0}, function(db, rs){
+			mongo.find(db, 'TypeSpending', {email: oauth, removed: 0, updateat: { $gt: +req.query.time}}, function(db, rs){
 				mongo.close(db);
 				res.send(rs);				
-			}, {parent_id: 1,oder: 1});
+			}, {parent_id: 1,oder: 1}, (page-1) * rows, rows);
 		});
 	})
 	;
@@ -138,11 +174,13 @@ module.exports = function(){
 	app.route('/wallet(/:id)?')
 	.get(function(req, res){
 		var oauth = req.headers.oauth;
+		var page = +(req.query.page || 1);
+		var rows = +(req.query.rows || 50);
 		mongo.open(DB, function(db){					
-			mongo.find(db, 'Wallet', {email: oauth, removed: 0}, function(db, rs){
+			mongo.find(db, 'Wallet', {email: oauth, removed: 0, updateat: { $gt: +req.query.time}}, function(db, rs){
 				mongo.close(db);
 				res.send(rs);				
-			}, {parent_id: 1,oder: 1});
+			}, {parent_id: 1,oder: 1}, (page-1) * rows, rows);
 		});
 	})
 	.put(function(req, res){
