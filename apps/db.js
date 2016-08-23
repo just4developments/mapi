@@ -13,7 +13,7 @@ module.exports = {
 	},
 	insert: function(db, doc, data, cb){
 		var collection = db.collection(doc);
-		if(data instanceof Array){
+		if(data instanceof Array){			
 			collection.insertMany(data, function(err, result) {
 		  	if(err) return console.log(err);
 		    cb(db, result);

@@ -5,6 +5,7 @@ var mongo = require('./../db');
 var ObjectId = require('mongodb').ObjectID;
 var secure = require('../secure.js');
 var uuid = require('uuid');
+var async = require('async');
 
 const DB = 'savemoney';
 
@@ -116,12 +117,13 @@ module.exports = function(){
 		mongo.open(DB, function(db){
 			mongo.find(db, 'User', {email: email}, (db, rs) => {
 				if(rs.length > 0){
-					rs[0].updateat = new Date().getTime();
+					rs[0].updatedAt = new Date().getTime();
 					mongo.update(db, 'User',
 					{
-						updateat: rs[0].updateat
+						updatedAt: rs[0].updatedAt
 					}, {email: email}, function(db, rs0){
 						mongo.close(db);
+						rs[0].isNew = false;
 						res.send(rs[0]);
 					});
 				}else{
@@ -129,13 +131,14 @@ module.exports = function(){
 					{
 						email: email,
 						createat: new Date().getTime(),
-						updateat: new Date().getTime()
+						updatedAt: new Date().getTime()
 					}, function(db, rs){
 						mongo.close(db);
-						if(rs.result.n == 1){							
+						if(rs.result.n == 1){
+							rs.ops[0].isNew = true;
 							res.send(rs.ops[0]);
 						}else{
-							res.sendStatus(403).send('Could not create user');
+							res.status(403).send('Could not create user');
 						}
 					});
 				}
@@ -149,11 +152,63 @@ module.exports = function(){
 		var page = +(req.query.page || 1);
 		var rows = +(req.query.rows || 50);
 		mongo.open(DB, function(db){					
-			mongo.find(db, 'Spending', {email: oauth, removed: 0, updateat: { $gt: +req.query.time}}, function(db, rs){
+			mongo.find(db, 'Spending', {email: oauth, removed: 0, updatedAt: { $gt: +req.query.time}}, function(db, rs){
 				mongo.close(db);
 				res.send(rs);				
 			}, {updatedAt: -1}, (page-1) * rows, rows);
 		});
+	})
+	.put(function(req, res){
+		var datas = req.body.data;
+		if(!(datas instanceof Array)){
+			datas = [datas];
+		}
+		mongo.open(DB, function(db){
+			var cbs = [];
+			for(var item of datas){
+				cbs.push(((item, cb) => {
+					mongo.update(db, 'Spending',
+					{
+						type_spending_id: item.type_spending_id,					
+						des: item.des,
+						removed: +item.removed,
+						created_date: +item.created_date,
+						updatedAt: new Date().getTime()
+					}, {
+						'_id': new ObjectId(item._id)
+					}, function(db, rs){						
+						if(rs.result.n == 1){
+							cb(null, rs);
+						}else{
+							cb('Could not update spending', rs);							
+						}
+					});
+				}).bind(null, item));
+				async.series(cbs, (err, rss) => {
+					if(err) return res.status(403).send(err);
+					res.send(null);
+				});
+			}
+		});
+	})
+	.post(function(req, res){
+		var oauth = req.headers.oauth;
+		var data = req.body.data.map(e=>{
+			e.createdAt = new Date().getTime();
+			e.updatedAt = e.createdAt;
+			e.is_sync = 1;
+			return e;
+		});
+		mongo.open(DB, function(db){									
+			mongo.insert(db, 'Spending', data, function(db, rs){
+				mongo.close(db);
+				if(rs.result.n > 0){
+					res.send(rs.ops);
+				}else{
+					res.status(403).send('Could not create spending');
+				}
+			});
+		})
 	})
 	;
 
@@ -162,12 +217,65 @@ module.exports = function(){
 		var oauth = req.headers.oauth;
 		var page = +(req.query.page || 1);
 		var rows = +(req.query.rows || 50);
-		mongo.open(DB, function(db){					
-			mongo.find(db, 'TypeSpending', {email: oauth, removed: 0, updateat: { $gt: +req.query.time}}, function(db, rs){
+		mongo.open(DB, function(db){
+			mongo.find(db, 'TypeSpending', {email: oauth, removed: 0, updatedAt: { $gt: +req.query.time}}, function(db, rs){
 				mongo.close(db);
 				res.send(rs);				
-			}, {parent_id: 1,oder: 1}, (page-1) * rows, rows);
+			}, {updatedAt: -1}, (page-1) * rows, rows);
 		});
+	})
+	.put(function(req, res){
+		var datas = req.body.data;
+		if(!(datas instanceof Array)){
+			datas = [datas];
+		}
+		mongo.open(DB, function(db){
+			var cbs = [];
+			for(var item of datas){
+				cbs.push(((item, cb) => {
+					mongo.update(db, 'TypeSpending',
+					{
+						name: item.name,					
+						oder: +item.oder,
+						icon: item.icon,
+						sicon: item.sicon,
+						removed: +item.removed,
+						updatedAt: new Date().getTime()
+					}, {
+						'_id': new ObjectId(item._id)
+					}, function(db, rs){						
+						if(rs.result.n == 1){
+							cb(null, rs);
+						}else{
+							cb('Could not update type spending', rs);							
+						}
+					});
+				}).bind(null, item));
+				async.series(cbs, (err, rss) => {
+					if(err) return res.status(403).send(err);
+					res.send(null);
+				});
+			}
+		});
+	})
+	.post(function(req, res){
+		var oauth = req.headers.oauth;
+		var data = req.body.data.map(e=>{
+			e.createdAt = new Date().getTime();
+			e.updatedAt = e.createdAt;
+			e.is_sync = 1;
+			return e;
+		});
+		mongo.open(DB, function(db){									
+			mongo.insert(db, 'TypeSpending', data, function(db, rs){
+				mongo.close(db);
+				if(rs.result.n > 0){
+					res.send(rs.ops);
+				}else{
+					res.status(403).send('Could not create type spending');
+				}
+			});
+		})
 	})
 	;
 
@@ -177,50 +285,63 @@ module.exports = function(){
 		var page = +(req.query.page || 1);
 		var rows = +(req.query.rows || 50);
 		mongo.open(DB, function(db){					
-			mongo.find(db, 'Wallet', {email: oauth, removed: 0, updateat: { $gt: +req.query.time}}, function(db, rs){
+			mongo.find(db, 'Wallet', {email: oauth, removed: 0, updatedAt: { $gt: +req.query.time}}, function(db, rs){
 				mongo.close(db);
 				res.send(rs);				
-			}, {parent_id: 1,oder: 1}, (page-1) * rows, rows);
+			}, {updatedAt: -1}, (page-1) * rows, rows);
 		});
 	})
 	.put(function(req, res){
-		mongo.open(DB, function(db){									
-			mongo.update(db, 'Wallet',
-			{
-				name: req.body.name,					
-				oder: parseInt(req.body.oder),
-				money: parseFloat(req.body.money),
-				isInclude: parseInt(req.body.isInclude) > 0 ? true : false,					
-				updateat: new Date().getTime()
-			}, {
-				'_id': new ObjectId(req.body._id)
-			}, function(db, rs){
-				mongo.close(db);
-				if(rs.result.n == 1){
-					res.send(rs);
-				}else{
-					res.sendStatus(403).send('Could not update wallet');
-				}
-			});
+		var datas = req.body.data;
+		if(!(datas instanceof Array)){
+			datas = [datas];
+		}
+		mongo.open(DB, function(db){
+			var cbs = [];
+			for(var item of datas){
+				cbs.push(((item, cb) => {
+					mongo.update(db, 'Wallet',
+					{
+						name: item.name,					
+						oder: +item.oder,
+						money: parseFloat(item.money),
+						removed: +item.removed,
+						icon: item.icon,
+						sicon: item.sicon,
+						isInclude: +item.isInclude > 0 ? true : false,					
+						updatedAt: new Date().getTime()
+					}, {
+						'_id': new ObjectId(item._id)
+					}, function(db, rs){						
+						if(rs.result.n == 1){
+							cb(null, rs);
+						}else{
+							cb('Could not update wallet', rs);							
+						}
+					});
+				}).bind(null, item));
+				async.series(cbs, (err, rss) => {
+					if(err) return res.status(403).send(err);
+					res.send(null);
+				});
+			}
 		});
 	})
 	.post(function(req, res){
+		var oauth = req.headers.oauth;
+		var data = req.body.data.map(e=>{
+			e.createdAt = new Date().getTime();
+			e.updatedAt = e.createdAt;
+			e.is_sync = 1;
+			return e;
+		});
 		mongo.open(DB, function(db){									
-			mongo.insert(db, 'Wallet',
-			{
-				email: req.body.email,
-				createat: new Date().getTime(),
-				name: req.body.name,					
-				oder: parseInt(req.body.oder),
-				money: parseFloat(req.body.money),
-				isInclude: parseInt(req.body.isInclude) > 0 ? true : false,					
-				updateat: new Date().getTime()
-			}, function(db, rs){
+			mongo.insert(db, 'Wallet', data, function(db, rs){
 				mongo.close(db);
-				if(rs.result.n == 1){
+				if(rs.result.n > 0){
 					res.send(rs.ops);
 				}else{
-					res.sendStatus(403).send('Could not create wallet');
+					res.status(403).send('Could not create wallet');
 				}
 			});
 		});
