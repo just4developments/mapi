@@ -16,7 +16,7 @@ module.exports = function(){
 		let email=req.query.email;
 		let table = req.query.table;
 		let updatedAt = +req.query.updatedAt;
-		mongo.open(DB, function(db){					
+		mongo.open(DB, function(db){
 			mongo.count(db, table, {email: email, updatedAt: { $gt: updatedAt}}, function(db, rs){
 				mongo.close(db);
 				res.type('text/plain').send(rs ? rs.toString(): null);
@@ -35,7 +35,7 @@ module.exports = function(){
 		let where = {email: email, updatedAt: { $gt: updatedAt}};
 		if(removed >= 0) where.removed = removed;
 		if(startTime > 0 && table === 'Spending') where.created_date = { $gt: startTime};
-		mongo.open(DB, function(db){					
+		mongo.open(DB, function(db){
 			mongo.find(db, table, where, function(db, rs){
 				mongo.close(db);
 				res.send(rs.map((e)=>{e.id = e._id; delete e._id; delete e.creditor_name; delete e.repayment_date; delete e.className; return e;}));
@@ -54,7 +54,7 @@ module.exports = function(){
 			if(r.uid !== 'undefined' && r.uid !== null) {
 				r.objectId = r.uid;
 				r.updatedAt = new Date().getTime();
-				delete r.uid;				
+				delete r.uid;
 				listUpdate.push(r);
 			}else {
 				delete r.uid;
@@ -76,7 +76,7 @@ module.exports = function(){
 				listUpdate[idx].updatedAt = new Date().getTime();
 				mongo.update(db, table, listUpdate[idx], {objectId: listUpdate[idx].objectId}, function(db, rs){
 					update(idx+1, fcDone);
-				});				
+				});
 			};
 			update(0, fcDone);
 		}
@@ -93,8 +93,8 @@ module.exports = function(){
 					adds(db, () => {
 						res.send(listAdd.map((e)=>{ return {ID: e.ID, uid: e.objectId}}));
 						mongo.close(db);
-					});	
-				}				
+					});
+				}
 			}else if(listUpdate.length > 0){
 				updates(db, () => {
 					mongo.close(db);
@@ -111,6 +111,58 @@ module.exports = function(){
 	});
 
 	////////////////////////////////////////////////////////////////////////////////////////
+	app.get('/share', (req, res) => {
+		res.send('ok');
+	});
+	app.post('/share', (req, res) => {
+		let email = req.body.email;
+		var oauth = req.headers.oauth;
+		mongo.open(DB, function(db){
+			mongo.find(db, 'User', {email: oauth}, (db, rs) => {
+				console.log(rs);
+				if(rs.length > 0){
+					var user = rs[0];
+					if(!user.shares) user.shares = [];
+					user.shares.push(email);
+					user.shares.sort((a,b)=>{
+						return a > b ? 1 : (a < b ? -1 : 0);
+					});
+					mongo.update(db, 'User',
+					{
+						shares: user.shares
+					}, {email: oauth}, function(db, rs0){
+						mongo.close(db);
+						res.send(user.shares);
+					});
+				}else{
+					res.status(404).send(null);
+				}
+			});
+		});
+	});
+
+	app.delete('/share/:email', (req, res) => {
+		let email = req.params.email;
+		var oauth = req.headers.oauth;
+		mongo.open(DB, function(db){
+			mongo.find(db, 'User', {email: oauth}, (db, rs) => {
+				if(rs.length > 0){
+					var user = rs[0];
+					if(!user.shares) user.shares = [];
+					user.shares.splice(user.shares.indexOf(email), 1);
+					mongo.update(db, 'User',
+					{
+						shares: user.shares
+					}, {email: oauth}, function(db, rs0){
+						mongo.close(db);
+						res.send(user.shares);
+					});
+				}else{
+					res.status(404).send(null);
+				}
+			});
+		});
+	});
 
 	app.post('/login', (req, res) =>{
 		let email = req.body.email;
@@ -142,7 +194,7 @@ module.exports = function(){
 						}
 					});
 				}
-			});			
+			});
 		});
 	});
 
@@ -151,10 +203,10 @@ module.exports = function(){
 		var oauth = req.headers.oauth;
 		var page = +(req.query.page || 1);
 		var rows = +(req.query.rows || 50);
-		mongo.open(DB, function(db){					
+		mongo.open(DB, function(db){
 			mongo.find(db, 'Spending', {email: oauth, removed: 0, updatedAt: { $gt: +req.query.time}}, function(db, rs){
 				mongo.close(db);
-				res.send(rs);				
+				res.send(rs);
 			}, {updatedAt: -1}, (page-1) * rows, rows);
 		});
 	})
@@ -169,18 +221,18 @@ module.exports = function(){
 				cbs.push(((item, cb) => {
 					mongo.update(db, 'Spending',
 					{
-						type_spending_id: item.type_spending_id,					
+						type_spending_id: item.type_spending_id,
 						des: item.des,
 						removed: +item.removed,
 						created_date: +item.created_date,
 						updatedAt: new Date().getTime()
 					}, {
 						'_id': new ObjectId(item._id)
-					}, function(db, rs){						
+					}, function(db, rs){
 						if(rs.result.n == 1){
 							cb(null, rs);
 						}else{
-							cb('Could not update spending', rs);							
+							cb('Could not update spending', rs);
 						}
 					});
 				}).bind(null, item));
@@ -199,7 +251,7 @@ module.exports = function(){
 			e.is_sync = 1;
 			return e;
 		});
-		mongo.open(DB, function(db){									
+		mongo.open(DB, function(db){
 			mongo.insert(db, 'Spending', data, function(db, rs){
 				mongo.close(db);
 				if(rs.result.n > 0){
@@ -220,7 +272,7 @@ module.exports = function(){
 		mongo.open(DB, function(db){
 			mongo.find(db, 'TypeSpending', {email: oauth, removed: 0, updatedAt: { $gt: +req.query.time}}, function(db, rs){
 				mongo.close(db);
-				res.send(rs);				
+				res.send(rs);
 			}, {updatedAt: -1}, (page-1) * rows, rows);
 		});
 	})
@@ -235,7 +287,7 @@ module.exports = function(){
 				cbs.push(((item, cb) => {
 					mongo.update(db, 'TypeSpending',
 					{
-						name: item.name,					
+						name: item.name,
 						oder: +item.oder,
 						icon: item.icon,
 						sicon: item.sicon,
@@ -243,11 +295,11 @@ module.exports = function(){
 						updatedAt: new Date().getTime()
 					}, {
 						'_id': new ObjectId(item._id)
-					}, function(db, rs){						
+					}, function(db, rs){
 						if(rs.result.n == 1){
 							cb(null, rs);
 						}else{
-							cb('Could not update type spending', rs);							
+							cb('Could not update type spending', rs);
 						}
 					});
 				}).bind(null, item));
@@ -266,7 +318,7 @@ module.exports = function(){
 			e.is_sync = 1;
 			return e;
 		});
-		mongo.open(DB, function(db){									
+		mongo.open(DB, function(db){
 			mongo.insert(db, 'TypeSpending', data, function(db, rs){
 				mongo.close(db);
 				if(rs.result.n > 0){
@@ -284,10 +336,10 @@ module.exports = function(){
 		var oauth = req.headers.oauth;
 		var page = +(req.query.page || 1);
 		var rows = +(req.query.rows || 50);
-		mongo.open(DB, function(db){					
+		mongo.open(DB, function(db){
 			mongo.find(db, 'Wallet', {email: oauth, removed: 0, updatedAt: { $gt: +req.query.time}}, function(db, rs){
 				mongo.close(db);
-				res.send(rs);				
+				res.send(rs);
 			}, {updatedAt: -1}, (page-1) * rows, rows);
 		});
 	})
@@ -302,21 +354,21 @@ module.exports = function(){
 				cbs.push(((item, cb) => {
 					mongo.update(db, 'Wallet',
 					{
-						name: item.name,					
+						name: item.name,
 						oder: +item.oder,
 						money: parseFloat(item.money),
 						removed: +item.removed,
 						icon: item.icon,
 						sicon: item.sicon,
-						isInclude: +item.isInclude > 0 ? true : false,					
+						isInclude: +item.isInclude > 0 ? true : false,
 						updatedAt: new Date().getTime()
 					}, {
 						'_id': new ObjectId(item._id)
-					}, function(db, rs){						
+					}, function(db, rs){
 						if(rs.result.n == 1){
 							cb(null, rs);
 						}else{
-							cb('Could not update wallet', rs);							
+							cb('Could not update wallet', rs);
 						}
 					});
 				}).bind(null, item));
@@ -335,7 +387,7 @@ module.exports = function(){
 			e.is_sync = 1;
 			return e;
 		});
-		mongo.open(DB, function(db){									
+		mongo.open(DB, function(db){
 			mongo.insert(db, 'Wallet', data, function(db, rs){
 				mongo.close(db);
 				if(rs.result.n > 0){
